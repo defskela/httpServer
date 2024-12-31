@@ -23,6 +23,26 @@ func (r *Router) AddRoute(method, path string, handler HandlerFunc) {
 	r.routes[method][path] = handler
 }
 
+func (r *Router) Get(path string, handler HandlerFunc) {
+	r.AddRoute("GET", path, handler)
+}
+
+func (r *Router) Post(path string, handler HandlerFunc) {
+	r.AddRoute("POST", path, handler)
+}
+
+func (r *Router) Put(path string, handler HandlerFunc) {
+	r.AddRoute("PUT", path, handler)
+}
+
+func (r *Router) Patch(path string, handler HandlerFunc) {
+	r.AddRoute("PATCH", path, handler)
+}
+
+func (r *Router) Delete(path string, handler HandlerFunc) {
+	r.AddRoute("DELETE", path, handler)
+}
+
 func (r *Router) HandleRequest(conn net.Conn, method, path string) {
 	if handlers, ok := r.routes[method]; ok {
 		if handler, ok := handlers[path]; ok {
