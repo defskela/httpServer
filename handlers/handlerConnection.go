@@ -3,11 +3,12 @@ package handlers
 import (
 	"fmt"
 	"httpServer/logger"
+	"httpServer/router"
 	"httpServer/utils"
 	"net"
 )
 
-func HandleConnection(conn net.Conn, log *logger.Logger) {
+func HandleConnection(conn net.Conn, log *logger.Logger, router *router.Router) {
 	log.Info(fmt.Sprintf("Соединение установлено %s %s", conn.LocalAddr().Network(), conn.LocalAddr().String()))
 
 	defer conn.Close()
@@ -18,12 +19,6 @@ func HandleConnection(conn net.Conn, log *logger.Logger) {
 		return
 	}
 
-	var response string
-	if request.Path == "/" {
-		response = utils.CreateHTTPResponse(200, "Welcome to my HTTP Server!")
-	} else {
-		response = utils.CreateHTTPResponse(404, "Page not found")
-	}
+	router.HandleRequest(conn, request.Method, request.Path)
 
-	conn.Write([]byte(response))
 }
