@@ -17,8 +17,11 @@ import (
 	"github.com/joho/godotenv"
 )
 
+var listener net.Listener
+
 func StartServ() {
-	listener, err := net.Listen("tcp", ":8080")
+	var err error
+	listener, err = net.Listen("tcp", ":8080")
 	if err != nil {
 		fmt.Println("Ошибка запуска сервера:", err)
 		os.Exit(1)
@@ -59,6 +62,9 @@ func StartServ() {
 				case <-done:
 					return
 				default:
+					if opErr, ok := err.(*net.OpError); ok && opErr.Err.Error() == "use of closed network connection" {
+						return
+					}
 					log.Error(err)
 					continue
 				}
@@ -69,7 +75,10 @@ func StartServ() {
 
 	<-stop
 	log.Info("Получен сигнал завершения, завершаем работу сервера...")
+	gracefulShutdown(listener, log, done)
+}
 
+func gracefulShutdown(listener net.Listener, log *logger.Logger, done chan struct{}) {
 	listener.Close()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -78,5 +87,4 @@ func StartServ() {
 	<-ctx.Done()
 	close(done)
 	log.Info("Сервер успешно завершил работу")
-
 }

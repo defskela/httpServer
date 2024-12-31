@@ -11,7 +11,10 @@ import (
 func HandleConnection(conn net.Conn, log *logger.Logger, router *router.Router) {
 	log.Info(fmt.Sprintf("Соединение установлено %s %s", conn.LocalAddr().Network(), conn.LocalAddr().String()))
 
-	defer conn.Close()
+	defer func() {
+		log.Info(fmt.Sprintf("Соединение закрыто %s %s", conn.LocalAddr().Network(), conn.LocalAddr().String()))
+		conn.Close()
+	}()
 
 	request, err := utils.ReadHTTPRequest(conn)
 	if err != nil {
@@ -20,5 +23,4 @@ func HandleConnection(conn net.Conn, log *logger.Logger, router *router.Router) 
 	}
 
 	router.HandleRequest(conn, log, request.Method, request.Path)
-
 }
