@@ -7,14 +7,17 @@ import (
 )
 
 type HandlerFunc func(conn net.Conn, params map[string]string)
+type MiddlewareFunc func(HandlerFunc) HandlerFunc
 
 type Router struct {
-	routes map[string]map[*regexp.Regexp]HandlerFunc
+	routes      map[string]map[*regexp.Regexp]HandlerFunc
+	middlewares []MiddlewareFunc
 }
 
 func NewRouter() *Router {
 	return &Router{
-		routes: make(map[string]map[*regexp.Regexp]HandlerFunc),
+		routes:      make(map[string]map[*regexp.Regexp]HandlerFunc),
+		middlewares: []MiddlewareFunc{},
 	}
 }
 
@@ -56,6 +59,7 @@ func (r *Router) HandleRequest(conn net.Conn, log *logger.Logger, method, path s
 						params[name] = matches[i]
 					}
 				}
+				handler = r.applyMiddlewares(handler)
 				handler(conn, params)
 				return
 			} else {
@@ -72,4 +76,15 @@ func (r *Router) HandleRequest(conn net.Conn, log *logger.Logger, method, path s
 func (r *Router) handleNotFound(conn net.Conn) {
 	response := "HTTP/1.1 404 Not Found\r\n\r\nRoute not found"
 	conn.Write([]byte(response))
+}
+
+func (r *Router) Use(middleware MiddlewareFunc) {
+	r.middlewares = append(r.middlewares, middleware)
+}
+
+func (r *Router) applyMiddlewares(handler HandlerFunc) HandlerFunc {
+	for i := len(r.middlewares) - 1; i >= 0; i-- {
+		handler = r.middlewares[i](handler)
+	}
+	return handler
 }
