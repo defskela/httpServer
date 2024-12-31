@@ -5,5 +5,5 @@ import (
 )
 
 func InitHandlers(router *router.Router) {
-	router.AddRoute("GET", "/", WelcomeHandler)
+	router.Get("/", WelcomeHandler)
 }

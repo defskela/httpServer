@@ -1,54 +1,69 @@
 package router
 
 import (
+	"httpServer/logger"
 	"net"
+	"regexp"
 )
 
 type HandlerFunc func(conn net.Conn, params map[string]string)
 
 type Router struct {
-	routes map[string]map[string]HandlerFunc
+	routes map[string]map[*regexp.Regexp]HandlerFunc
 }
 
 func NewRouter() *Router {
 	return &Router{
-		routes: make(map[string]map[string]HandlerFunc),
+		routes: make(map[string]map[*regexp.Regexp]HandlerFunc),
 	}
 }
 
-func (r *Router) AddRoute(method, path string, handler HandlerFunc) {
+func (r *Router) addRoute(method, path string, handler HandlerFunc) {
 	if r.routes[method] == nil {
-		r.routes[method] = make(map[string]HandlerFunc)
+		r.routes[method] = make(map[*regexp.Regexp]HandlerFunc)
 	}
-	r.routes[method][path] = handler
+	regexPath := regexp.MustCompile(path)
+	r.routes[method][regexPath] = handler
 }
 
 func (r *Router) Get(path string, handler HandlerFunc) {
-	r.AddRoute("GET", path, handler)
+	r.addRoute("GET", path, handler)
 }
 
 func (r *Router) Post(path string, handler HandlerFunc) {
-	r.AddRoute("POST", path, handler)
+	r.addRoute("POST", path, handler)
 }
 
 func (r *Router) Put(path string, handler HandlerFunc) {
-	r.AddRoute("PUT", path, handler)
+	r.addRoute("PUT", path, handler)
 }
 
 func (r *Router) Patch(path string, handler HandlerFunc) {
-	r.AddRoute("PATCH", path, handler)
+	r.addRoute("PATCH", path, handler)
 }
 
 func (r *Router) Delete(path string, handler HandlerFunc) {
-	r.AddRoute("DELETE", path, handler)
+	r.addRoute("DELETE", path, handler)
 }
 
-func (r *Router) HandleRequest(conn net.Conn, method, path string) {
+func (r *Router) HandleRequest(conn net.Conn, log *logger.Logger, method, path string) {
 	if handlers, ok := r.routes[method]; ok {
-		if handler, ok := handlers[path]; ok {
-			handler(conn, nil)
-			return
+		for regex, handler := range handlers {
+			if matches := regex.FindStringSubmatch(path); matches != nil {
+				params := make(map[string]string)
+				for i, name := range regex.SubexpNames() {
+					if i != 0 && name != "" {
+						params[name] = matches[i]
+					}
+				}
+				handler(conn, params)
+				return
+			} else {
+				log.Debug("Неверно указан url")
+			}
 		}
+	} else {
+		log.Debug("Неверно указан метод")
 	}
 
 	r.handleNotFound(conn)

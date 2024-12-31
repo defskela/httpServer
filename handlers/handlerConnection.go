@@ -19,6 +19,6 @@ func HandleConnection(conn net.Conn, log *logger.Logger, router *router.Router) 
 		return
 	}
 
-	router.HandleRequest(conn, request.Method, request.Path)
+	router.HandleRequest(conn, log, request.Method, request.Path)
 
 }
