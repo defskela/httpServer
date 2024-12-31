@@ -2,16 +2,19 @@ package handlers
 
 import (
 	"fmt"
+	"httpServer/logger"
 	"httpServer/utils"
 	"net"
 )
 
-func HandleConnection(conn net.Conn) {
+func HandleConnection(conn net.Conn, log *logger.Logger) {
+	log.Info(fmt.Sprintf("Соединение установлено %s %s", conn.LocalAddr().Network(), conn.LocalAddr().String()))
+
 	defer conn.Close()
 
 	request, err := utils.ReadHTTPRequest(conn)
 	if err != nil {
-		fmt.Println("Error reading HTTP request:", err)
+		log.Warn(fmt.Sprintf("Ошибка чтения HTTP-запроса: %s", err))
 		return
 	}
 
