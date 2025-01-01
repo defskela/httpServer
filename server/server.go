@@ -3,7 +3,6 @@ package server
 import (
 	"context"
 	"fmt"
-	"log"
 	"net"
 	"os"
 	"os/signal"
@@ -13,24 +12,12 @@ import (
 	"github.com/defskela/httpServer/logger"
 	"github.com/defskela/httpServer/router"
 	"github.com/defskela/httpServer/utils"
-
-	"github.com/joho/godotenv"
 )
 
 func StartServ(router *router.Router, levelLogger int) {
 	listener, err := net.Listen("tcp", ":8080")
 	if err != nil {
 		fmt.Println("Ошибка запуска сервера:", err)
-		os.Exit(1)
-	}
-
-	err = godotenv.Load()
-	if err != nil {
-		log.Fatalf("Ошибка загрузки .env файла: %v", err)
-	}
-
-	if err != nil {
-		fmt.Println("Ошибка преобразования уровня логгера:", err)
 		os.Exit(1)
 	}
 
