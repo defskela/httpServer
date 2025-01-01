@@ -2,9 +2,10 @@ package middleware
 
 import (
 	"fmt"
-	"httpServer/logger"
 	"net"
 	"testing"
+
+	"github.com/defskela/httpServer/logger"
 )
 
 type mockConn struct {

@@ -1,6 +1,6 @@
 package main
 
-import "httpServer/server"
+import "github.com/defskela/httpServer/server"
 
 func main() {
 	server.StartServ()

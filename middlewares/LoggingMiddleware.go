@@ -1,8 +1,9 @@
 package middleware
 
 import (
-	"httpServer/logger"
 	"net"
+
+	"github.com/defskela/httpServer/logger"
 )
 
 func LoggingMiddleware(log *logger.Logger) func(handlerFunc func(conn net.Conn, params map[string]string)) func(conn net.Conn, params map[string]string) {

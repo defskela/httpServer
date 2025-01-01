@@ -3,9 +3,10 @@ package utils
 import (
 	"bufio"
 	"fmt"
-	"httpServer/http"
 	"net"
 	"strings"
+
+	"github.com/defskela/httpServer/http"
 )
 
 func ReadHTTPRequest(conn net.Conn) (*http.HTTPRequest, error) {

@@ -3,9 +3,6 @@ package server
 import (
 	"context"
 	"fmt"
-	"httpServer/logger"
-	"httpServer/router"
-	"httpServer/utils"
 	"log"
 	"net"
 	"os"
@@ -13,6 +10,10 @@ import (
 	"strconv"
 	"syscall"
 	"time"
+
+	"github.com/defskela/httpServer/logger"
+	"github.com/defskela/httpServer/router"
+	"github.com/defskela/httpServer/utils"
 
 	"github.com/joho/godotenv"
 )

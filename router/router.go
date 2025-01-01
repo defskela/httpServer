@@ -1,9 +1,10 @@
 package router
 
 import (
-	"httpServer/logger"
 	"net"
 	"regexp"
+
+	"github.com/defskela/httpServer/logger"
 )
 
 type HandlerFunc func(conn net.Conn, params map[string]string)
