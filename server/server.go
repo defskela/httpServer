@@ -3,9 +3,9 @@ package server
 import (
 	"context"
 	"fmt"
-	"httpServer/handlers"
 	"httpServer/logger"
 	"httpServer/router"
+	"httpServer/utils"
 	"log"
 	"net"
 	"os"
@@ -42,7 +42,6 @@ func StartServ() {
 	}
 
 	router := router.NewRouter()
-	handlers.InitHandlers(router)
 
 	log.Info("Сервер работает на порту 8080...")
 
@@ -66,7 +65,7 @@ func StartServ() {
 					continue
 				}
 			}
-			go handlers.HandleConnection(conn, log, router)
+			go connection(conn, log, router)
 		}
 	}()
 
@@ -84,4 +83,21 @@ func gracefulShutdown(listener net.Listener, log *logger.Logger, done chan struc
 	<-ctx.Done()
 	close(done)
 	log.Info("Сервер успешно завершил работу")
+}
+
+func connection(conn net.Conn, log *logger.Logger, router *router.Router) {
+	log.Info(fmt.Sprintf("Соединение установлено %s %s", conn.LocalAddr().Network(), conn.LocalAddr().String()))
+
+	defer func() {
+		log.Info(fmt.Sprintf("Соединение закрыто %s %s", conn.LocalAddr().Network(), conn.LocalAddr().String()))
+		conn.Close()
+	}()
+
+	request, err := utils.ReadHTTPRequest(conn)
+	if err != nil {
+		log.Warn(fmt.Sprintf("Ошибка чтения HTTP-запроса: %s", err))
+		return
+	}
+
+	router.HandleRequest(conn, log, request.Method, request.Path)
 }
