@@ -5,6 +5,8 @@ import (
 	"syscall"
 	"testing"
 	"time"
+
+	"github.com/defskela/httpServer/router"
 )
 
 func TestGracefulShutdown(t *testing.T) {
@@ -16,7 +18,7 @@ func TestGracefulShutdown(t *testing.T) {
 	defer os.Remove(".env")
 
 	go func() {
-		StartServ()
+		StartServ(router.NewRouter())
 	}()
 
 	time.Sleep(1 * time.Second)

@@ -18,7 +18,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
-func StartServ() {
+func StartServ(router *router.Router) {
 	listener, err := net.Listen("tcp", ":8080")
 	if err != nil {
 		fmt.Println("Ошибка запуска сервера:", err)
@@ -41,8 +41,6 @@ func StartServ() {
 		log.Error(err)
 		os.Exit(1)
 	}
-
-	router := router.NewRouter()
 
 	log.Info("Сервер работает на порту 8080...")
 

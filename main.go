@@ -1,7 +1,11 @@
 package main
 
-import "github.com/defskela/httpServer/server"
+import (
+	"github.com/defskela/httpServer/router"
+	"github.com/defskela/httpServer/server"
+)
 
 func main() {
-	server.StartServ()
+	router := router.NewRouter()
+	server.StartServ(router)
 }
