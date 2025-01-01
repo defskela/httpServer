@@ -7,7 +7,6 @@ import (
 	"net"
 	"os"
 	"os/signal"
-	"strconv"
 	"syscall"
 	"time"
 
@@ -18,7 +17,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
-func StartServ(router *router.Router) {
+func StartServ(router *router.Router, levelLogger int) {
 	listener, err := net.Listen("tcp", ":8080")
 	if err != nil {
 		fmt.Println("Ошибка запуска сервера:", err)
@@ -29,14 +28,13 @@ func StartServ(router *router.Router) {
 	if err != nil {
 		log.Fatalf("Ошибка загрузки .env файла: %v", err)
 	}
-	levelLogger := os.Getenv("LEVEL_LOGGER")
-	level, err := strconv.Atoi(levelLogger)
+
 	if err != nil {
 		fmt.Println("Ошибка преобразования уровня логгера:", err)
 		os.Exit(1)
 	}
 
-	log, err := logger.NewLogger(level)
+	log, err := logger.NewLogger(levelLogger)
 	if err != nil {
 		log.Error(err)
 		os.Exit(1)

@@ -18,7 +18,7 @@ func TestGracefulShutdown(t *testing.T) {
 	defer os.Remove(".env")
 
 	go func() {
-		StartServ(router.NewRouter())
+		StartServ(router.NewRouter(), 0)
 	}()
 
 	time.Sleep(1 * time.Second)
