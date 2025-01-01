@@ -17,11 +17,8 @@ import (
 	"github.com/joho/godotenv"
 )
 
-var listener net.Listener
-
 func StartServ() {
-	var err error
-	listener, err = net.Listen("tcp", ":8080")
+	listener, err := net.Listen("tcp", ":8080")
 	if err != nil {
 		fmt.Println("Ошибка запуска сервера:", err)
 		os.Exit(1)

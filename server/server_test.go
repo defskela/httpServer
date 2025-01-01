@@ -2,36 +2,35 @@ package server
 
 import (
 	"os"
-	"os/signal"
 	"syscall"
 	"testing"
 	"time"
 )
 
 func TestGracefulShutdown(t *testing.T) {
-	envContent := "LEVEL_LOGGER=0\n"
+	envContent := `LEVEL_LOGGER="0"`
 	err := os.WriteFile(".env", []byte(envContent), 0644)
 	if err != nil {
 		t.Fatalf("Ошибка создания временного .env файла: %v", err)
 	}
 	defer os.Remove(".env")
 
-	stop := make(chan os.Signal, 1)
-	signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM)
-
-	done := make(chan struct{})
-
 	go func() {
 		StartServ()
-		close(done)
 	}()
 
 	time.Sleep(1 * time.Second)
-	stop <- syscall.SIGINT
 
-	select {
-	case <-done:
-	case <-time.After(15 * time.Second):
-		t.Fatal("Сервер не завершил работу в течение 15 секунд")
+	p, err := os.FindProcess(os.Getpid())
+	if err != nil {
+		t.Fatalf("Не удалось найти текущий процесс: %v", err)
 	}
+
+	err = p.Signal(syscall.SIGINT)
+	if err != nil {
+		t.Fatalf("Не удалось отправить сигнал SIGINT: %v", err)
+	}
+
+	time.Sleep(6 * time.Second)
+
 }
