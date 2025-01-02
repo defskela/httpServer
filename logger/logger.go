@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 )
 
 type Logger struct {
@@ -36,21 +37,34 @@ func NewLogger(level int) (*Logger, error) {
 
 }
 
-func (l *Logger) Info(message string) {
+func (l *Logger) Info(message ...any) {
 	if l.level < 1 {
-		l.infoLogger.Println(message)
+		// Преобразуем каждый элемент в строку и объединяем их через пробел
+		var strMessages []string
+		for _, m := range message {
+			strMessages = append(strMessages, fmt.Sprint(m))
+		}
+		l.infoLogger.Println(strings.Join(strMessages, " "))
 	}
 }
 
-func (l *Logger) Debug(message string) {
+func (l *Logger) Debug(message ...any) {
 	if l.level < 2 {
-		l.debugLogger.Println(message)
+		var strMessages []string
+		for _, m := range message {
+			strMessages = append(strMessages, fmt.Sprint(m))
+		}
+		l.debugLogger.Println(strings.Join(strMessages, " "))
 	}
 }
 
-func (l *Logger) Warn(message string) {
+func (l *Logger) Warn(message ...string) {
 	if l.level < 3 {
-		l.warnLogger.Println(message)
+		var strMessages []string
+		for _, m := range message {
+			strMessages = append(strMessages, fmt.Sprint(m))
+		}
+		l.warnLogger.Println(strings.Join(strMessages, " "))
 	}
 }
 
