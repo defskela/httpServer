@@ -25,14 +25,20 @@ type Logger struct {
 var defaultLogger *Logger
 
 func init() {
-	defaultLogger, _ = NewLogger(0)
+	defaultLogger, _ = newLogger(0)
 }
 
+/*
+level 1 убирает info-логи,
+level 2 убирает info и debug-логи,
+level 3 убирает info, debug и warn-логи,
+level 4 убирает info, debug, warn и error-логи,
+*/
 func SetLevel(level int) {
 	defaultLogger.level = level
 }
 
-func NewLogger(level int) (*Logger, error) {
+func newLogger(level int) (*Logger, error) {
 	if level >= 0 && level <= 4 {
 		return &Logger{
 			infoLogger:  log.New(os.Stdout, "\033[1;34mINFO\033[0m: ", log.Ldate|log.Ltime),
@@ -46,7 +52,7 @@ func NewLogger(level int) (*Logger, error) {
 	}
 }
 
-func (l *Logger) Info(message ...any) {
+func (l *Logger) info(message ...any) {
 	if l.level < 1 {
 		var strMessages []string
 		for _, m := range message {
@@ -56,7 +62,7 @@ func (l *Logger) Info(message ...any) {
 	}
 }
 
-func (l *Logger) Debug(message ...any) {
+func (l *Logger) debug(message ...any) {
 	if l.level < 2 {
 		var strMessages []string
 		for _, m := range message {
@@ -66,7 +72,7 @@ func (l *Logger) Debug(message ...any) {
 	}
 }
 
-func (l *Logger) Warn(message ...any) {
+func (l *Logger) warn(message ...any) {
 	if l.level < 3 {
 		var strMessages []string
 		for _, m := range message {
@@ -76,25 +82,28 @@ func (l *Logger) Warn(message ...any) {
 	}
 }
 
-func (l *Logger) Error(err error) {
+func (l *Logger) error(err error) {
 	if l.level < 4 {
 		l.errorLogger.Println(err)
 	}
 }
 
-// Глобальные функции
+// Для логирования ожидаемого поведения системы
 func Info(message ...any) {
-	defaultLogger.Info(message...)
+	defaultLogger.info(message...)
 }
 
+// Для разработки и тестирования, чтобы отслеживать шаги выполнения кода
 func Debug(message ...any) {
-	defaultLogger.Debug(message...)
+	defaultLogger.debug(message...)
 }
 
+// Для указания на нежелательное поведение, которое может потребовать внимания, но не критично для продолжения работы
 func Warn(message ...any) {
-	defaultLogger.Warn(message...)
+	defaultLogger.warn(message...)
 }
 
+// Для логирования ошибок, которые требуют вмешательства
 func Error(err error) {
-	defaultLogger.Error(err)
+	defaultLogger.error(err)
 }
