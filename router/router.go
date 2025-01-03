@@ -4,6 +4,7 @@ import (
 	"net"
 	"regexp"
 
+	"github.com/defskela/httpServer/http"
 	"github.com/defskela/httpServer/logger"
 )
 
@@ -50,10 +51,10 @@ func (r *Router) Delete(path string, handler HandlerFunc) {
 	r.addRoute("DELETE", path, handler)
 }
 
-func (r *Router) HandleRequest(conn net.Conn, log *logger.Logger, method, path string) {
-	if handlers, ok := r.routes[method]; ok {
+func (r *Router) HandleRequest(conn net.Conn, request *http.HTTPRequest) {
+	if handlers, ok := r.routes[request.Method]; ok {
 		for regex, handler := range handlers {
-			if matches := regex.FindStringSubmatch(path); matches != nil {
+			if matches := regex.FindStringSubmatch(request.Path); matches != nil {
 				params := make(map[string]string)
 				for i, name := range regex.SubexpNames() {
 					if i != 0 && name != "" {
@@ -64,11 +65,11 @@ func (r *Router) HandleRequest(conn net.Conn, log *logger.Logger, method, path s
 				handler(conn, params)
 				return
 			} else {
-				log.Debug("Неверно указан url")
+				logger.Debug("Неверно указан url")
 			}
 		}
 	} else {
-		log.Debug("Неверно указан метод")
+		logger.Debug("Неверно указан метод")
 	}
 
 	r.handleNotFound(conn)

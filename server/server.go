@@ -14,6 +14,7 @@ import (
 	"github.com/defskela/httpServer/utils"
 )
 
+// Need to transfer the router and logger level
 func StartServ(router *router.Router, levelLogger int) {
 	listener, err := net.Listen("tcp", ":8080")
 	if err != nil {
@@ -21,13 +22,12 @@ func StartServ(router *router.Router, levelLogger int) {
 		os.Exit(1)
 	}
 
-	log, err := logger.NewLogger(levelLogger)
 	if err != nil {
-		log.Error(err)
+		logger.Error(err)
 		os.Exit(1)
 	}
 
-	log.Info("Сервер работает на порту 8080...")
+	logger.Info("Сервер работает на порту 8080...")
 
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM)
@@ -45,20 +45,20 @@ func StartServ(router *router.Router, levelLogger int) {
 					if opErr, ok := err.(*net.OpError); ok && opErr.Err.Error() == "use of closed network connection" {
 						return
 					}
-					log.Error(err)
+					logger.Error(err)
 					continue
 				}
 			}
-			go connection(conn, log, router)
+			go connection(conn, router)
 		}
 	}()
 
 	<-stop
-	log.Info("Получен сигнал завершения, завершаем работу сервера...")
-	gracefulShutdown(listener, log, done)
+	logger.Info("Получен сигнал завершения, завершаем работу сервера...")
+	gracefulShutdown(listener, done)
 }
 
-func gracefulShutdown(listener net.Listener, log *logger.Logger, done chan struct{}) {
+func gracefulShutdown(listener net.Listener, done chan struct{}) {
 	listener.Close()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -66,22 +66,24 @@ func gracefulShutdown(listener net.Listener, log *logger.Logger, done chan struc
 
 	<-ctx.Done()
 	close(done)
-	log.Info("Сервер успешно завершил работу")
+	logger.Info("Сервер успешно завершил работу")
 }
 
-func connection(conn net.Conn, log *logger.Logger, router *router.Router) {
-	log.Info(fmt.Sprintf("Соединение установлено %s %s", conn.LocalAddr().Network(), conn.LocalAddr().String()))
+func connection(conn net.Conn, router *router.Router) {
+	logger.Info(fmt.Sprintf("Соединение установлено %s %s", conn.LocalAddr().Network(), conn.LocalAddr().String()))
 
 	defer func() {
-		log.Info(fmt.Sprintf("Соединение закрыто %s %s", conn.LocalAddr().Network(), conn.LocalAddr().String()))
+		logger.Info("Соединение закрыто", conn.LocalAddr().Network(), conn.LocalAddr().String())
 		conn.Close()
 	}()
 
 	request, err := utils.ReadHTTPRequest(conn)
 	if err != nil {
-		log.Warn(fmt.Sprintf("Ошибка чтения HTTP-запроса: %s", err))
+		logger.Warn(fmt.Sprintf("Ошибка чтения HTTP-запроса: %s", err))
 		return
 	}
 
-	router.HandleRequest(conn, log, request.Method, request.Path)
+	logger.Info("Получен HTTP-запрос:", request.Method, request.Path, request.Version, request.FormData)
+
+	router.HandleRequest(conn, request)
 }
