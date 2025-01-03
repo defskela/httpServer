@@ -1,11 +1,8 @@
 package middleware
 
 import (
-	"fmt"
 	"net"
 	"testing"
-
-	"github.com/defskela/httpServer/logger"
 )
 
 type mockConn struct {
@@ -19,13 +16,7 @@ func (m *mockConn) Write(b []byte) (n int, err error) {
 }
 
 func TestLoggingMiddleware(t *testing.T) {
-	log, err := logger.NewLogger(0)
-	if err != nil {
-		fmt.Println("Ошибка создания логгера при тесте")
-		return
-	}
-
-	middleware := LoggingMiddleware(log)
+	middleware := LoggingMiddleware()
 
 	handler := func(conn net.Conn, params map[string]string) {
 		conn.Write([]byte("Handler executed"))

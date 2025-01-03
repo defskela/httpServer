@@ -4,7 +4,7 @@ import (
 	"net"
 	"testing"
 
-	"github.com/defskela/httpServer/logger"
+	"github.com/defskela/httpServer/http"
 )
 
 type mockConn struct {
@@ -24,7 +24,8 @@ func TestRouter_Get(t *testing.T) {
 	})
 
 	conn := &mockConn{}
-	router.HandleRequest(conn, nil, "GET", "/")
+	request := &http.HTTPRequest{Method: "GET", Path: "/"}
+	router.HandleRequest(conn, request)
 
 	expected := "Welcome to start page!"
 	if conn.written != expected {
@@ -36,8 +37,8 @@ func TestRouter_NotFound(t *testing.T) {
 	router := NewRouter()
 
 	conn := &mockConn{}
-	log, _ := logger.NewLogger(0)
-	router.HandleRequest(conn, log, "GET", "/notfound")
+	request := &http.HTTPRequest{Method: "GET", Path: "/"}
+	router.HandleRequest(conn, request)
 
 	expected := "HTTP/1.1 404 Not Found\r\n\r\nRoute not found"
 	if conn.written != expected {
