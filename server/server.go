@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/defskela/httpServer/logger"
+	"github.com/defskela/httpServer/models"
 	"github.com/defskela/httpServer/router"
 	"github.com/defskela/httpServer/utils"
 )
@@ -33,6 +34,8 @@ func StartServ(router *router.Router, levelLogger int) {
 	signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM)
 
 	done := make(chan struct{})
+
+	router.Get("/ping", pingHandler)
 
 	go func() {
 		for {
@@ -86,4 +89,8 @@ func connection(conn net.Conn, router *router.Router) {
 	logger.Info("Получен HTTP-запрос:", request.Method, request.Path, request.Version, request.FormData)
 
 	router.HandleRequest(conn, request)
+}
+
+func pingHandler(conn net.Conn, reqData models.RequestData) {
+	conn.Write([]byte(utils.CreateHTTPResponse(200, "pong")))
 }
