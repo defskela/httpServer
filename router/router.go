@@ -61,6 +61,13 @@ func (r *Router) HandleRequest(conn net.Conn, request *http.HTTPRequest) {
 						params[name] = matches[i]
 					}
 				}
+				if request.Body != "" {
+					params["_body"] = request.Body
+				}
+				for key, value := range request.FormData {
+					params["_"+key] = value
+				}
+
 				handler = r.applyMiddlewares(handler)
 				handler(conn, params)
 				return
