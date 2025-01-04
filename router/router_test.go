@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/defskela/httpServer/http"
+	"github.com/defskela/httpServer/models"
 )
 
 type mockConn struct {
@@ -19,7 +20,7 @@ func (m *mockConn) Write(b []byte) (n int, err error) {
 
 func TestRouter_Get(t *testing.T) {
 	router := NewRouter()
-	router.Get("/", func(conn net.Conn, params map[string]string) {
+	router.Get("/", func(conn net.Conn, data models.RequestData) {
 		conn.Write([]byte("Welcome to start page!"))
 	})
 
