@@ -84,6 +84,11 @@ func ReadHTTPRequest(conn net.Conn) (*http.HTTPRequest, error) {
 			if name != "" {
 				request.FormData[name] = string(data)
 			}
+
+			fileName := part.FileName()
+			if fileName != "" {
+				request.FormData["fileName"] = fileName
+			}
 		}
 	} else if request.Method == "POST" || request.Method == "PUT" || request.Method == "PATCH" || request.Method == "DELETE" {
 		logger.Debug(1)
