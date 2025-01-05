@@ -10,15 +10,9 @@ import (
 )
 
 func TestGracefulShutdown(t *testing.T) {
-	envContent := `LEVEL_LOGGER="0"`
-	err := os.WriteFile(".env", []byte(envContent), 0644)
-	if err != nil {
-		t.Fatalf("Ошибка создания временного .env файла: %v", err)
-	}
-	defer os.Remove(".env")
-
+	server := NewServer(router.NewRouter())
 	go func() {
-		StartServ(router.NewRouter(), 0)
+		server.Start("8080")
 	}()
 
 	time.Sleep(1 * time.Second)

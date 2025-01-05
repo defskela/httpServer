@@ -15,17 +15,34 @@ import (
 	"github.com/defskela/httpServer/utils"
 )
 
+type server struct {
+	listener net.Listener
+	router   *router.Router
+	done     chan struct{}
+	stop     chan os.Signal
+}
+
+func NewServer(router *router.Router) *server {
+	return &server{
+		router: router,
+		done:   make(chan struct{}),
+		stop:   make(chan os.Signal, 1),
+	}
+}
+
 // Need to transfer the router and logger level
-func StartServ(router *router.Router, levelLogger int) {
-	listener, err := net.Listen("tcp", ":8080")
+func (s *server) Start(port string) error {
+	listener, err := net.Listen("tcp", ":"+port)
 	if err != nil {
 		fmt.Println("Ошибка запуска сервера:", err)
 		os.Exit(1)
 	}
 
+	s.listener = listener
+
 	if err != nil {
 		logger.Error(err)
-		os.Exit(1)
+		return err
 	}
 
 	logger.Info("Сервер работает на порту 8080...")
@@ -35,7 +52,7 @@ func StartServ(router *router.Router, levelLogger int) {
 
 	done := make(chan struct{})
 
-	router.Get("/ping", pingHandler)
+	s.router.Get("/ping", pingHandler)
 
 	go func() {
 		for {
@@ -52,23 +69,30 @@ func StartServ(router *router.Router, levelLogger int) {
 					continue
 				}
 			}
-			go connection(conn, router)
+			go connection(conn, s.router)
 		}
 	}()
+	go func() {
+		<-stop
+		logger.Info("Получен сигнал завершения, завершаем работу сервера...")
+		s.Shutdown()
+	}()
 
-	<-stop
-	logger.Info("Получен сигнал завершения, завершаем работу сервера...")
-	gracefulShutdown(listener, done)
+	return nil
+
 }
 
-func gracefulShutdown(listener net.Listener, done chan struct{}) {
-	listener.Close()
+func (s *server) Shutdown() {
+	logger.Info("Завершаем работу сервера...")
+	s.listener.Close()
 
+	// graceful shutdown
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
+	close(s.done)
+
 	<-ctx.Done()
-	close(done)
 	logger.Info("Сервер успешно завершил работу")
 }
 
