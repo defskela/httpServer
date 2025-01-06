@@ -72,11 +72,10 @@ func (s *server) Start(port string) error {
 			go connection(conn, s.router)
 		}
 	}()
-	go func() {
-		<-stop
-		logger.Info("Получен сигнал завершения, завершаем работу сервера...")
-		s.Shutdown()
-	}()
+
+	<-stop
+	logger.Info("Получен сигнал завершения, завершаем работу сервера...")
+	s.Shutdown()
 
 	return nil
 
